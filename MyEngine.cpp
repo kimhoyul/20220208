@@ -6,10 +6,20 @@
 #include "Goal.h"
 #include <iostream>
 
-MyEngine::MyEngine()
+//MyEngine::MyEngine()
+//{
+//	CurrentWorld = new World();
+//	bIsRunning = true;
+//}
+
+MyEngine::MyEngine(std::string Title, std::string LevelName, int Width, int Height)
 {
 	CurrentWorld = new World();
 	bIsRunning = true;
+
+	LoadLevel(LevelName);
+
+	Init(Title, Width, Height);
 }
 
 MyEngine::~MyEngine()
@@ -17,11 +27,35 @@ MyEngine::~MyEngine()
 	delete CurrentWorld;
 	CurrentWorld = nullptr;
 	bIsRunning = false;
+
+	Term();
+}
+
+void MyEngine::Init(std::string Title, int Width, int Height)
+{
+	if (SDL_Init(SDL_INIT_VIDEO) < 0)
+	{
+		std::cout << "SDL_Init Error :" << SDL_GetError() << std::endl;
+	}
+
+	SDL_Window* MyWindow = SDL_CreateWindow(Title.c_str(), 100, 100, Width, Height, SDL_WINDOW_OPENGL);
+	SDL_Renderer* MyRenderer = SDL_CreateRenderer(MyWindow, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE);
+
+	if (MyRenderer == nullptr)
+	{
+		std::cout << "can't Create renderer :" << SDL_GetError() << std::endl;
+	}
+}
+
+void MyEngine::Term()
+{
+	SDL_DestroyRenderer(MyRenderer);
+	SDL_DestroyWindow(MyWindow);
+	SDL_Quit();
 }
 
 void MyEngine::Run()
 {
-	//1 Frame
 	BeginPlay();
 	while (bIsRunning)
 	{
@@ -141,15 +175,42 @@ void MyEngine::BeginPlay()
 
 void MyEngine::Tick()
 {
+	//엔진에서 기본 처리 하는 이벤트
+	switch (MyEvent.type)
+	{
+	case SDL_QUIT:
+		bIsRunning = false;
+		break;
+	case SDL_KEYDOWN:
+		switch (MyEvent.key.keysym.sym)
+		{
+		case SDLK_q:
+			bIsRunning = false;
+			break;
+		}
+		break;
+	}
+
+
 	CurrentWorld->Tick();
 }
 
 void MyEngine::Render()
 {
+	//그릴 리스트 준비
+//PreRender(그릴 준비, 그릴 물체 배치)
+
 	CurrentWorld->Render();
+
+	//GPU야 그려라
+//Render
+	SDL_RenderPresent(MyRenderer);
 }
 
 void MyEngine::Input()
 {
+	//Input
+	SDL_PollEvent(&MyEvent);
+
 	CurrentWorld->Input();
 }
