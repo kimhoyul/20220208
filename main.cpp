@@ -6,9 +6,11 @@
 //#include "Goal.h"
 #include <iostream>
 #include "SDL.h"
+#include <vector>
 
 #pragma comment(lib, "SDL2.lib")
 #pragma comment(lib, "SDL2main.lib")
+
 
 using namespace std;
 
@@ -116,15 +118,78 @@ using namespace std;
 //}
 int SDL_main(int argc, char* argv[])
 {
-//	MyEngine* PlayEngine = new MyEngine();
-//
-//	PlayEngine->LoadLevel("Level02.map");
-//	PlayEngine->SaveLevel("Level03.map");
-//
-////	PlayEngine->Run();
-//
-//	delete PlayEngine;
-//	PlayEngine = nullptr;
+	//	MyEngine* PlayEngine = new MyEngine();
+	//
+	//	PlayEngine->LoadLevel("Level02.map");
+	//	PlayEngine->SaveLevel("Level03.map");
+	//
+	////	PlayEngine->Run();
+	//
+	//	delete PlayEngine;
+	//	PlayEngine = nullptr;
+
+	if (SDL_Init(SDL_INIT_VIDEO) < 0)
+	{
+		cout << "SDL_INIT_VIDEO :" << SDL_GetError() << endl;
+		return -1;
+	}
+
+	SDL_Window* MyWindow = SDL_CreateWindow("First SDL Exmple", 100, 100, 800, 600, SDL_WINDOW_OPENGL);
+
+	SDL_Event MyEvent;
+
+	//그림물감통 준비
+	SDL_Renderer* MyRenderer = SDL_CreateRenderer(MyWindow, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE);
+
+	if (MyRenderer == nullptr)
+	{
+		cout << "can't Create renderer : " << SDL_GetError() << endl;
+		return -1;
+	}
+
+	bool bIsRunning = true;
+
+	while (bIsRunning)
+	{
+		
+		//Input
+		SDL_PollEvent(&MyEvent);
+
+		switch (MyEvent.type)
+		{
+		case SDL_QUIT:
+			bIsRunning = false;
+			break;
+		case SDL_KEYDOWN:
+			cout << SDL_GetKeyName( MyEvent.key.keysym.sym) << " 키 눌러짐" << endl;
+			switch (MyEvent.key.keysym.sym)
+			{
+			case SDLK_q :
+				bIsRunning = false;
+				break;
+			}
+			break;
+		case SDL_MOUSEBUTTONDOWN: 
+			cout << (MyEvent.button.button == SDL_BUTTON_LEFT) << " 키 눌러짐" << endl;
+			cout << "(" << MyEvent.button.x << ", " << MyEvent.button.y << ")" << endl;
+		}
+
+		
+		//Renderer(그릴 준비, 그릴 물체 배치)
+		SDL_SetRenderDrawColor(MyRenderer, 0xff, 0xff, 0xff, 0xff);
+		SDL_RenderClear(MyRenderer);
+		
+		//빨간색 선 그리기
+		SDL_SetRenderDrawColor(MyRenderer, 0xff, 0x00, 0x00, 256);
+		SDL_RenderDrawLine(MyRenderer, 100, 100, 200, 200);
+
+		//Render(그리기 시작)
+		SDL_RenderPresent(MyRenderer);
+	}
+
+	SDL_DestroyRenderer(MyRenderer);
+	SDL_DestroyWindow(MyWindow);
+	SDL_Quit();
 
 	return 0;
 }
